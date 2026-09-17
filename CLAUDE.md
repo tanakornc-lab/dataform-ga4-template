@@ -124,15 +124,19 @@ gcloud iam service-accounts add-iam-policy-binding \
 ### Step 8 — Compile + Full Refresh ใน Dataform workspace
 > ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Dataform workspace แล้วรอ confirm ก่อนไปขั้นถัดไป**
 
+- เข้า workspace แล้วกด **Pull** (หรือ **Fetch and pull**) ก่อนเสมอ — เพื่อ sync code ที่ merge เข้า GitHub มาแล้วให้ workspace เห็น
 - กด **Compile** — ถ้ามี error แจ้ง user พร้อม error message แล้วแก้ก่อน
 - กด **Start Execution** → เลือก **Full Refresh** — รอจน status เป็น Succeeded
 
 ### Step 9 — ตั้ง Workflow Scheduler
 > ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Dataform Console**
 
-- Release config: Daily 11:00 AM ICT, branch `main`
-- Workflow config: Daily 11:30 AM ICT, SA: `sa-dataform-runner-prod`
+- Release config: Daily **11:00 AM ICT**, branch `main`
+- Workflow config: Daily **11:30 AM ICT**, SA: `sa-dataform-runner-prod`
 - ห้ามตั้งก่อน 10:00 AM — GA4 export finalize ประมาณ 09-10 AM ICT ถ้าตั้งก่อนนั้น mart จะได้ข้อมูลช้าไป 2 วัน (T-2)
+
+> **Timezone ใน Dataform Console:** ถ้า UI มี timezone picker → เลือก **Asia/Bangkok** ได้เลย  
+> ถ้า UI ใช้ UTC → ตั้ง **04:00 UTC** (Release) และ **04:30 UTC** (Workflow) — เท่ากับ 11:00/11:30 AM ICT
 
 ### Step 10 — เชื่อม Looker Studio กับ analytics_mart
 > ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Looker Studio แล้วรอ confirm ก่อนจบ setup**
@@ -291,6 +295,8 @@ git commit -m "type: description"
 git push -u origin <branch>
 gh pr create ...
 # แจ้ง user merge — ห้าม merge เอง
+# หลัง user merge PR กลับมาแล้ว:
+git pull                               # sync local ก่อนเสมอ ป้องกัน conflict ครั้งถัดไป
 ```
 
 **Commit types:** `feat:` `fix:` `docs:` `refactor:`

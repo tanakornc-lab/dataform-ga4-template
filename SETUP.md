@@ -122,8 +122,9 @@ GROUP BY 1 ORDER BY 2 DESC
 เข้า Dataform workspace: [console.cloud.google.com](https://console.cloud.google.com) → ค้นหา **Dataform** → เลือก Repository ที่สร้างใน Step 4 → กด **Open workspace** (หรือ **Develop**)
 
 ใน workspace:
-1. กด **Compile** — ต้องไม่มี error
-2. กด **Start Execution** → เลือก **Full Refresh**
+1. กด **Pull** (หรือ **Fetch and pull**) ก่อนเสมอ — sync code ที่ merge เข้า GitHub แล้วให้ workspace เห็น
+2. กด **Compile** — ต้องไม่มี error
+3. กด **Start Execution** → เลือก **Full Refresh**
 
 ---
 
@@ -135,6 +136,9 @@ GROUP BY 1 ORDER BY 2 DESC
 
 > ห้ามตั้งก่อน 10:00 AM — GA4 export finalize ประมาณ 09-10 AM ICT  
 > ตั้งก่อนเวลา = mart ได้ข้อมูลช้าไป 2 วัน (T-2 แทน T-1)
+
+**Timezone:** ถ้า UI มี timezone picker → เลือก **Asia/Bangkok**  
+ถ้า UI ใช้ UTC → ตั้ง **04:00 UTC** (Release) และ **04:30 UTC** (Workflow)
 
 ---
 
