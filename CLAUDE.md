@@ -18,8 +18,8 @@
 |---|---|
 | BQ Project | `YOUR_BQ_PROJECT` ← แก้ใน `workflow_settings.yaml` |
 | GA4 Property ID | `YOUR_PROPERTY_ID` ← แก้ใน `workflow_settings.yaml` |
-| Default Location | `asia-southeast1` |
-| Timezone | `Asia/Bangkok` |
+| Default Location | `asia-southeast1` ← แก้ใน `workflow_settings.yaml` ถ้า BQ project อยู่ region อื่น |
+| Timezone | `Asia/Bangkok` ← แก้ถ้าต่างกัน |
 
 ---
 
@@ -59,25 +59,65 @@ LIMIT 50
 ```
 > ดูว่าแต่ละ param เก็บใน `int_value`, `double_value`, หรือ `string_value` ก่อนเขียน stg
 
-### Step 4 — เชื่อม Dataform กับ GitHub repo
-- ทำใน Dataform Console: Settings → Repository → Connect to GitHub
+**หลัง query เสร็จ: บันทึก events + params ที่ยืนยันแล้วลงใน `TRACKING_PLAN.md` ทันที**
 
-### Step 5 — เขียน stg_* สำหรับ events ของ app
+### Step 4 — สร้าง Service Account สำหรับ Dataform
+
+> **จำเป็นสำหรับ org ที่เปิด strict act-as checks** (เช่น Google Workspace org) — ถ้าข้ามขั้นนี้จะ error: "Service account must be set when strict act as checks are enabled"
+
+```bash
+# สร้าง SA
+gcloud iam service-accounts create sa-dataform-runner-prod \
+  --project=YOUR_BQ_PROJECT \
+  --display-name="Dataform Runner (prod)"
+
+# Grant BigQuery roles
+gcloud projects add-iam-policy-binding YOUR_BQ_PROJECT \
+  --member="serviceAccount:sa-dataform-runner-prod@YOUR_BQ_PROJECT.iam.gserviceaccount.com" \
+  --role="roles/bigquery.dataEditor"
+
+gcloud projects add-iam-policy-binding YOUR_BQ_PROJECT \
+  --member="serviceAccount:sa-dataform-runner-prod@YOUR_BQ_PROJECT.iam.gserviceaccount.com" \
+  --role="roles/bigquery.jobUser"
+
+# Grant user act-as SA นี้ได้
+gcloud iam service-accounts add-iam-policy-binding \
+  sa-dataform-runner-prod@YOUR_BQ_PROJECT.iam.gserviceaccount.com \
+  --member="user:YOUR_EMAIL" \
+  --role="roles/iam.serviceAccountUser"
+```
+
+ถ้ามี Secret Manager → เพิ่ม `roles/secretmanager.secretAccessor` ให้ SA ด้วย
+
+> **Race condition:** ถ้า grant roles แล้วได้ error "Service account does not exist" — รอ 10–15 วินาทีแล้วรัน command เดิมซ้ำ (IAM propagation ยังไม่เสร็จ)
+
+### Step 5 — เชื่อม Dataform กับ GitHub repo
+> ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Dataform Console แล้วรอ confirm ก่อนไปขั้นถัดไป**
+
+- Dataform Console → สร้าง Repository → Connect to GitHub → เลือก repo นี้
+- Workspace Settings → Authentication → เลือก SA `sa-dataform-runner-prod`
+
+### Step 6 — เขียน stg_* สำหรับ events ของ app
 - copy `stg_custom_events.sqlx` → ตั้งชื่อตาม event group
-- ดู pattern ใน Step 3 แล้วใส่ param extraction ที่ถูกต้อง
+- ดู param types จาก Step 3 แล้วใส่ extraction ที่ถูกต้อง
+- **float params → ใช้ `COALESCE(value.double_value, value.float_value, CAST(value.int_value AS FLOAT64))` เสมอ**
 
-### Step 6 — เขียน int_* และ mart_*
+### Step 7 — เขียน int_* และ mart_*
 - copy `int_custom_kpis.sqlx` และ `mart_custom_daily.sqlx`
 - แก้ตาม business logic ของ app
 
-### Step 7 — Compile + Full Refresh ใน Dataform workspace
-- Compile ก่อนเสมอเพื่อ catch syntax error
-- รัน Full Refresh ครั้งแรกเพื่อ backfill ข้อมูล 90 วัน
+### Step 8 — Compile + Full Refresh ใน Dataform workspace
+> ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Dataform workspace แล้วรอ confirm ก่อนไปขั้นถัดไป**
 
-### Step 8 — ตั้ง Workflow Scheduler
-- Release config: Daily 11:00 AM ICT (หรือหลังจากนั้น), branch `main`
-- Workflow config: Daily 11:30 AM ICT
-- ห้ามตั้งก่อน 10:00 AM — GA4 export finalize ประมาณ 09-10 AM ICT
+- กด **Compile** — ถ้ามี error แจ้ง user พร้อม error message แล้วแก้ก่อน
+- กด **Start Execution** → เลือก **Full Refresh** — รอจน status เป็น Succeeded
+
+### Step 9 — ตั้ง Workflow Scheduler
+> ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Dataform Console**
+
+- Release config: Daily 11:00 AM ICT, branch `main`
+- Workflow config: Daily 11:30 AM ICT, SA: `sa-dataform-runner-prod`
+- ห้ามตั้งก่อน 10:00 AM — GA4 export finalize ประมาณ 09-10 AM ICT ถ้าตั้งก่อนนั้น mart จะได้ข้อมูลช้าไป 2 วัน (T-2)
 
 ---
 
