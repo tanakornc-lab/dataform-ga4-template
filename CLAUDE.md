@@ -77,7 +77,7 @@ LIMIT 50
 
 ### Step 4 — สร้าง Service Account สำหรับ Dataform
 
-> **จำเป็นสำหรับ org ที่เปิด strict act-as checks** (เช่น Google Workspace org) — ถ้าข้ามขั้นนี้จะ error: "Service account must be set when strict act as checks are enabled"
+> **แนะนำทำเสมอ ไม่ว่าจะใช้ personal account หรือ org** — ถ้าข้ามและ error: "Service account must be set when strict act as checks are enabled" จะต้องกลับมาทำทีหลังแล้ว reconnect ใหม่ทั้งหมด ทำก่อนประหยัดเวลากว่ามาก
 
 ```bash
 # สร้าง SA
@@ -108,7 +108,8 @@ gcloud iam service-accounts add-iam-policy-binding \
 ### Step 5 — เชื่อม Dataform กับ GitHub repo
 > ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Dataform Console แล้วรอ confirm ก่อนไปขั้นถัดไป**
 
-- Dataform Console → สร้าง Repository → Connect to GitHub → เลือก repo นี้
+- เปิด [console.cloud.google.com](https://console.cloud.google.com) → ค้นหา **Dataform** → เลือก project
+- สร้าง Repository → Connect to GitHub → เลือก repo นี้
 - Workspace Settings → Authentication → เลือก SA `sa-dataform-runner-prod`
 
 ### Step 6 — เขียน stg_* สำหรับ events ของ app

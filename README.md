@@ -14,8 +14,15 @@ Dataform pipeline template สำหรับทุก app ที่ใช้ **
 ### 1. Fork หรือ Use as Template
 กด **Use this template** → สร้าง repo ใหม่ใน GitHub ของคุณ
 
-### 2. อ่าน CLAUDE.md และทำตาม Setup Checklist
-ไฟล์ `CLAUDE.md` คือคู่มือสำหรับ AI — เปิด Claude Code แล้วแนบ CLAUDE.md ในการสนทนา AI จะทำ setup ให้ตามขั้นตอน
+### 2. Clone มาที่เครื่องแล้วเปิด Claude Code
+```bash
+git clone https://github.com/<your-username>/<your-app>-dataform.git
+cd <your-app>-dataform
+claude
+```
+จากนั้นพิมพ์ใน Claude: `"อ่าน CLAUDE.md แล้วเริ่ม setup ให้เลย"`
+
+> ไฟล์ `CLAUDE.md` คือคู่มือสำหรับ AI — เปิด Claude Code ใน folder นี้แล้ว AI จะทำ setup ให้ตามขั้นตอนทั้งหมด
 
 ### 3. แก้ workflow_settings.yaml
 ```yaml

@@ -23,9 +23,21 @@
 
 ---
 
-## Step 1 — Fork / Use as Template
+## Step 1 — Fork / Use as Template แล้ว Clone มาที่เครื่อง
 
-กด **Use this template** บน GitHub → สร้าง repo ใหม่ชื่อ `<your-app>-dataform`
+1. กด **Use this template** บน GitHub → สร้าง repo ใหม่ชื่อ `<your-app>-dataform`
+2. Clone repo มาที่ local:
+   ```bash
+   git clone https://github.com/<your-username>/<your-app>-dataform.git
+   cd <your-app>-dataform
+   ```
+3. เปิด Claude Code ใน folder นี้:
+   ```bash
+   claude
+   ```
+4. พิมพ์ใน Claude: `"อ่าน CLAUDE.md แล้วเริ่ม setup ให้เลย"` — AI จะทำตาม checklist ให้ครบ
+
+> **ไม่มี Claude Code?** ติดตั้งได้ที่ `npm install -g @anthropic-ai/claude-code` หรือดาวน์โหลด [Claude Desktop](https://claude.ai/download)
 
 ---
 
@@ -74,7 +86,7 @@ gcloud iam service-accounts add-iam-policy-binding \
 
 ## Step 4 — เชื่อม Dataform กับ GitHub
 
-1. เปิด Dataform Console ใน GCP
+1. เปิด Dataform Console: [console.cloud.google.com](https://console.cloud.google.com) → ค้นหา **Dataform** ใน search bar → เลือก project
 2. สร้าง Repository ใหม่ → เลือก GitHub → เชื่อมกับ repo ที่ fork มา
 3. ใน Workspace Settings → เลือก SA `sa-dataform-runner-prod`
 
