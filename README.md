@@ -15,6 +15,10 @@ Dataform pipeline template สำหรับทุก app ที่ใช้ **
 กด **Use this template** → สร้าง repo ใหม่ใน GitHub ของคุณ
 
 ### 2. Clone มาที่เครื่องแล้วเปิด Claude Code
+
+> **ยังไม่มี Claude Code?** ติดตั้งก่อน: `npm install -g @anthropic-ai/claude-code`  
+> หรือดาวน์โหลด [Claude Desktop](https://claude.ai/download) (รวม Claude Code มาด้วย)
+
 ```bash
 git clone https://github.com/<your-username>/<your-app>-dataform.git
 cd <your-app>-dataform

@@ -8,7 +8,9 @@
 
 - [ ] Google Cloud project พร้อม billing
 - [ ] GitHub account
-- [ ] `gcloud` CLI ติดตั้งแล้วและ login แล้ว
+- [ ] `git` CLI — ตรวจสอบ: `git --version` ถ้าไม่มีติดตั้งที่ [git-scm.com](https://git-scm.com)
+- [ ] `gcloud` CLI ติดตั้งแล้วและ login แล้ว — [cloud.google.com/sdk](https://cloud.google.com/sdk/docs/install)
+- [ ] Claude Code — ติดตั้ง: `npm install -g @anthropic-ai/claude-code` หรือ [Claude Desktop](https://claude.ai/download)
 
 ---
 
@@ -80,7 +82,7 @@ gcloud iam service-accounts add-iam-policy-binding \
   --role="roles/iam.serviceAccountUser"
 ```
 
-> **ทำไมต้องทำ?** องค์กรที่เปิด `strict act-as checks` จะ error ถ้าไม่มี SA นี้
+> **แนะนำทำเสมอ ไม่ว่าจะใช้ personal account หรือ org** — ถ้าข้ามแล้วเจอ error "Service account must be set" จะต้องกลับมา reconnect Dataform ใหม่ทั้งหมด
 
 ---
 
@@ -117,7 +119,9 @@ GROUP BY 1 ORDER BY 2 DESC
 
 ## Step 7 — Compile + Full Refresh
 
-ใน Dataform workspace:
+เข้า Dataform workspace: [console.cloud.google.com](https://console.cloud.google.com) → ค้นหา **Dataform** → เลือก Repository ที่สร้างใน Step 4 → กด **Open workspace** (หรือ **Develop**)
+
+ใน workspace:
 1. กด **Compile** — ต้องไม่มี error
 2. กด **Start Execution** → เลือก **Full Refresh**
 
