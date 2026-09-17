@@ -7,9 +7,19 @@
 ## Prerequisites
 
 - [ ] Google Cloud project พร้อม billing
-- [ ] GA4 export ไป BigQuery เปิดแล้ว (Firebase Console → Integrations → BigQuery)
 - [ ] GitHub account
 - [ ] `gcloud` CLI ติดตั้งแล้วและ login แล้ว
+
+---
+
+## Step 0 — เปิด GA4 → BigQuery Export
+
+ตรวจสอบว่ามี dataset ที่ขึ้นต้นด้วย `analytics_` ใน BigQuery Console หรือยัง
+
+**ถ้ายังไม่มี:** ไปที่ Firebase Console → Project Settings → Integrations → BigQuery → **Link** → เลือก BQ project → Enable  
+**⚠️ รอ 24 ชั่วโมง** ก่อน dataset จะปรากฏใน BigQuery แล้วค่อยไปขั้นถัดไป
+
+**ถ้ามีแล้ว:** จด dataset name ไว้ เช่น `analytics_551585329` แล้วไปขั้นถัดไปได้เลย
 
 ---
 
@@ -109,6 +119,19 @@ GROUP BY 1 ORDER BY 2 DESC
 
 > ห้ามตั้งก่อน 10:00 AM — GA4 export finalize ประมาณ 09-10 AM ICT  
 > ตั้งก่อนเวลา = mart ได้ข้อมูลช้าไป 2 วัน (T-2 แทน T-1)
+
+---
+
+## Step 9 — เชื่อม Looker Studio
+
+หลังจาก Scheduler รันอย่างน้อย 1 ครั้งและมีข้อมูลใน `analytics_mart` แล้ว:
+
+1. เปิด [Looker Studio](https://lookerstudio.google.com) → สร้าง Report ใหม่
+2. Add Data → **BigQuery** → เลือก Project → dataset **`analytics_mart`** → เลือก `mart_core_daily`
+3. กด **Connect** → **Add to Report**
+4. สร้าง chart แรก: Time series — Dimension = `event_date`, Metric = `dau`
+5. ถ้าต้องการเพิ่ม Retention heatmap: **Add data** อีกครั้ง → เลือก `mart_retention_daily`
+   - Cross tab: Row = `cohort_date`, Column = `day_n`, Value = `retention_pct`
 
 ---
 

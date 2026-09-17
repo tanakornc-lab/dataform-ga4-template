@@ -25,6 +25,13 @@
 
 ## Setup Checklist (AI: ทำตามลำดับนี้เมื่อตั้งโปรเจกใหม่)
 
+### Step 0 — ตรวจสอบ GA4 → BigQuery Export
+> ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ตรวจสอบเองและ confirm ก่อนไปขั้นถัดไป**
+
+ถามว่า user เปิด GA4 → BigQuery export แล้วหรือยัง:
+- **ถ้ายังไม่ได้เปิด:** แจ้งให้ไปที่ Firebase Console → Project Settings → Integrations → BigQuery → Link แล้วรอ 24 ชั่วโมงก่อน dataset จะปรากฏใน BigQuery — **หยุดรอก่อนทำขั้นถัดไป**
+- **ถ้าเปิดแล้ว:** ให้ user ยืนยัน dataset name เช่น `analytics_551585329` แล้วไปขั้นถัดไปได้เลย
+
 ### Step 1 — แก้ `workflow_settings.yaml`
 ```yaml
 defaultProject: YOUR_BQ_PROJECT        # ← ใส่ BQ project จริง
@@ -34,6 +41,8 @@ vars:
 ```
 
 ### Step 2 — ค้นหา events จริงใน BQ
+> ⚠️ **AI รัน BQ query แทนไม่ได้ — ส่ง query ด้านล่างให้ user รันใน BigQuery Console แล้วให้ user วาง (paste) ผลลัพธ์กลับมาที่นี่**
+
 ```sql
 SELECT DISTINCT event_name, COUNT(*) AS cnt
 FROM `YOUR_BQ_PROJECT.analytics_XXXXX.events_*`
@@ -43,7 +52,11 @@ GROUP BY 1
 ORDER BY 2 DESC
 ```
 
+รอ user paste ผลลัพธ์มาก่อน จึงไปขั้นถัดไป
+
 ### Step 3 — ค้นหา params ของแต่ละ event
+> ⚠️ **AI รัน BQ query แทนไม่ได้ — ส่ง query ด้านล่างให้ user รันใน BigQuery Console (แก้ `YOUR_EVENT_NAME` เป็น event ที่ต้องการ) แล้วให้ user วาง (paste) ผลลัพธ์กลับมาที่นี่**
+
 ```sql
 SELECT ep.key, ep.value.int_value, ep.value.float_value,
        ep.value.double_value, ep.value.string_value,
@@ -57,7 +70,8 @@ GROUP BY 1, 2, 3, 4, 5
 ORDER BY cnt DESC
 LIMIT 50
 ```
-> ดูว่าแต่ละ param เก็บใน `int_value`, `double_value`, หรือ `string_value` ก่อนเขียน stg
+> ดูจากผลลัพธ์ว่าแต่ละ param เก็บใน `int_value`, `double_value`, หรือ `string_value` ก่อนเขียน stg
+> รอ user paste ผลลัพธ์ทุก event ที่ต้องการมาก่อน จึงไปขั้นถัดไป
 
 **หลัง query เสร็จ: บันทึก events + params ที่ยืนยันแล้วลงใน `TRACKING_PLAN.md` ทันที**
 
@@ -118,6 +132,24 @@ gcloud iam service-accounts add-iam-policy-binding \
 - Release config: Daily 11:00 AM ICT, branch `main`
 - Workflow config: Daily 11:30 AM ICT, SA: `sa-dataform-runner-prod`
 - ห้ามตั้งก่อน 10:00 AM — GA4 export finalize ประมาณ 09-10 AM ICT ถ้าตั้งก่อนนั้น mart จะได้ข้อมูลช้าไป 2 วัน (T-2)
+
+### Step 10 — เชื่อม Looker Studio กับ analytics_mart
+> ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Looker Studio แล้วรอ confirm ก่อนจบ setup**
+
+ก่อนทำขั้นนี้ต้องมีข้อมูลใน mart tables แล้ว (Step 7-8 เสร็จแล้วและ Scheduler รันอย่างน้อย 1 ครั้ง)
+
+**วิธีเชื่อม:**
+1. เปิด [Looker Studio](https://lookerstudio.google.com) → สร้าง Report ใหม่
+2. เลือก Data Source → **BigQuery**
+3. เลือก Project → dataset **`analytics_mart`** → เลือก table ที่ต้องการ (เริ่มจาก `mart_core_daily`)
+4. กด **Connect** → **Add to Report**
+
+**Charts พื้นฐานที่แนะนำ:**
+- **DAU Trend** — Time series chart: Dimension = `event_date`, Metric = `dau`
+- **New Users by Country** — Bar chart: Dimension = `country`, Metric = `new_users`
+- **Retention Heatmap** — Cross tab / Pivot: Row = `cohort_date`, Column = `day_n`, Value = `retention_pct` (ใช้ `mart_retention_daily`)
+
+**Data Sources แยกกัน:** ถ้าต้องการใช้ทั้ง `mart_core_daily` และ `mart_retention_daily` ใน report เดียว ให้เพิ่ม Data Source หลายตัว (Add data → BigQuery → เลือก table ที่สอง)
 
 ---
 
