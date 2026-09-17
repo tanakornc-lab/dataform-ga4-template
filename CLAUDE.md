@@ -97,7 +97,7 @@ gcloud projects add-iam-policy-binding YOUR_BQ_PROJECT \
 # Grant user act-as SA นี้ได้
 gcloud iam service-accounts add-iam-policy-binding \
   sa-dataform-runner-prod@YOUR_BQ_PROJECT.iam.gserviceaccount.com \
-  --member="user:YOUR_EMAIL" \
+  --member="user:YOUR_EMAIL@gmail.com" \
   --role="roles/iam.serviceAccountUser"
 ```
 
