@@ -141,7 +141,7 @@ gcloud iam service-accounts add-iam-policy-binding \
 ### Step 10 — เชื่อม Looker Studio กับ analytics_mart
 > ⚠️ **AI ทำขั้นนี้แทนไม่ได้ — แจ้ง user ให้ทำใน Looker Studio แล้วรอ confirm ก่อนจบ setup**
 
-ก่อนทำขั้นนี้ต้องมีข้อมูลใน mart tables แล้ว (Step 7-8 เสร็จแล้วและ Scheduler รันอย่างน้อย 1 ครั้ง)
+ก่อนทำขั้นนี้ต้องมีข้อมูลใน mart tables แล้ว — **หลัง Full Refresh ใน Step 8 เสร็จแล้ว เชื่อมได้ทันที** (ไม่ต้องรอ Scheduler — Scheduler เป็นแค่การ refresh อัตโนมัติรายวัน)
 
 **วิธีเชื่อม:**
 1. เปิด [Looker Studio](https://lookerstudio.google.com) → สร้าง Report ใหม่

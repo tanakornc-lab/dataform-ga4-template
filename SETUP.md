@@ -144,7 +144,7 @@ GROUP BY 1 ORDER BY 2 DESC
 
 ## Step 9 — เชื่อม Looker Studio
 
-หลังจาก Scheduler รันอย่างน้อย 1 ครั้งและมีข้อมูลใน `analytics_mart` แล้ว:
+หลัง Full Refresh ใน Step 7 เสร็จแล้ว `analytics_mart` มีข้อมูลแล้ว — **เชื่อมได้ทันที ไม่ต้องรอ Scheduler**
 
 1. เปิด [Looker Studio](https://lookerstudio.google.com) → สร้าง Report ใหม่
 2. Add Data → **BigQuery** → เลือก Project → dataset **`analytics_mart`** → เลือก `mart_core_daily`
