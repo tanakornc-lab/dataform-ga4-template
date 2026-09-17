@@ -1,0 +1,16 @@
+config {
+    type: "view",
+    schema: "analytics_transform",
+    name: "int_core_kpis",
+    description: "Transform: DAU, new users, sessions per day × country × OS"
+}
+
+SELECT
+    event_date,
+    country,
+    os,
+    COUNT(DISTINCT CASE WHEN event_name = 'session_start' THEN user_pseudo_id END) AS dau,
+    COUNT(DISTINCT CASE WHEN event_name = 'first_open'    THEN user_pseudo_id END) AS new_users,
+    COUNT(CASE WHEN event_name = 'session_start' THEN 1 END)                       AS sessions
+FROM ${ref("stg_core_events")}
+GROUP BY 1, 2, 3

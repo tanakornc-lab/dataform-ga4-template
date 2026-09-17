@@ -1,0 +1,39 @@
+config {
+    type: "incremental",
+    schema: "analytics_mart",
+    name: "mart_core_daily",
+    description: "Mart: DAU, new users, sessions per day × country × OS",
+    uniqueKey: ["event_date", "country", "os"],
+    bigquery: {
+        partitionBy: "event_date",
+        clusterBy: ["country", "os"]
+    },
+    assertions: {
+        nonNull: ["event_date", "country", "os"]
+    },
+    columns: {
+        event_date:  "Event date (local timezone)",
+        country:     "User country",
+        os:          "Operating system (iOS, Android, Web)",
+        dau:         "Daily Active Users — unique user_pseudo_id with session_start",
+        new_users:   "New users — unique user_pseudo_id with first_open",
+        sessions:    "Total session count",
+        updated_at:  "Pipeline run timestamp"
+    }
+}
+
+SELECT
+    event_date,
+    country,
+    os,
+    CAST(dau       AS INT64)   AS dau,
+    CAST(new_users AS INT64)   AS new_users,
+    CAST(sessions  AS INT64)   AS sessions,
+    CURRENT_TIMESTAMP()        AS updated_at
+FROM ${ref("int_core_kpis")}
+WHERE
+    event_date IS NOT NULL
+    AND ${when(incremental(),
+        `event_date >= DATE_SUB(CURRENT_DATE('${dataform.projectConfig.vars.timezone}'), INTERVAL 3 DAY)`,
+        `event_date >= DATE_SUB(CURRENT_DATE('${dataform.projectConfig.vars.timezone}'), INTERVAL 90 DAY)`
+    )}

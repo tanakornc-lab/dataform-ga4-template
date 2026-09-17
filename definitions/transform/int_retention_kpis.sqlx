@@ -1,0 +1,27 @@
+config {
+    type: "view",
+    schema: "analytics_transform",
+    name: "int_retention_kpis",
+    description: "Transform: cohort date per user — anchors to first_open event_date with latest country/os snapshot"
+}
+
+WITH
+  ranked_user_status AS (
+    SELECT
+      user_pseudo_id,
+      country,
+      os,
+      MIN(CASE WHEN event_name = 'first_open' THEN event_date END)
+        OVER (PARTITION BY user_pseudo_id)                                    AS cohort_date,
+      ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY event_date DESC) AS rn
+    FROM ${ref("stg_core_events")}
+  )
+SELECT
+  user_pseudo_id,
+  SAFE_CAST(cohort_date AS DATE) AS cohort_date,
+  country,
+  os
+FROM ranked_user_status
+WHERE
+  rn = 1
+  AND cohort_date IS NOT NULL

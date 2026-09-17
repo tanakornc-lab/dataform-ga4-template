@@ -1,0 +1,41 @@
+-- =============================================================================
+-- TEMPLATE FILE — copy แล้วแก้ตาม metrics ของ app
+-- ชื่อไฟล์: mart_<name>_daily.sqlx  เช่น mart_purchase_daily.sqlx
+-- =============================================================================
+
+config {
+    type: "incremental",
+    schema: "analytics_mart",
+    name: "mart_custom_daily",        -- TODO: เปลี่ยนชื่อ
+    description: "Mart: TODO — อธิบาย table นี้",
+    uniqueKey: ["event_date", "country", "os"],  -- TODO: เพิ่ม dimensions ที่เป็น grain
+    bigquery: {
+        partitionBy: "event_date",
+        clusterBy: ["country", "os"]  -- TODO: เพิ่ม cluster columns ถ้ามี (max 4)
+    },
+    assertions: {
+        nonNull: ["event_date", "country", "os"]  -- TODO: เหมือน uniqueKey
+    },
+    columns: {
+        event_date: "Event date (local timezone)",
+        country:    "User country",
+        os:         "Operating system"
+        -- TODO: อธิบาย columns ที่เพิ่ม
+    }
+}
+
+SELECT
+    event_date,
+    country,
+    os,
+    -- TODO: CAST ทุก column ให้ชัดเจน
+    CAST(event_count  AS INT64)   AS event_count,
+    CAST(unique_users AS INT64)   AS unique_users,
+    CURRENT_TIMESTAMP()           AS updated_at
+FROM ${ref("int_custom_kpis")}   -- TODO: เปลี่ยนเป็นชื่อ transform ที่ถูกต้อง
+WHERE
+    event_date IS NOT NULL
+    AND ${when(incremental(),
+        `event_date >= DATE_SUB(CURRENT_DATE('${dataform.projectConfig.vars.timezone}'), INTERVAL 3 DAY)`,
+        `event_date >= DATE_SUB(CURRENT_DATE('${dataform.projectConfig.vars.timezone}'), INTERVAL 90 DAY)`
+    )}

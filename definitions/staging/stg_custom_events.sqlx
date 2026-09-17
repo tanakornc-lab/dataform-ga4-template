@@ -1,0 +1,41 @@
+-- =============================================================================
+-- TEMPLATE FILE — สร้างไฟล์ใหม่ทับหรือ copy แล้วแก้ตาม event ของ app ตัวเอง
+-- ชื่อไฟล์: stg_<event_group>_events.sqlx  เช่น stg_purchase_events.sqlx
+-- =============================================================================
+
+config {
+    type: "view",
+    schema: "analytics_staging",
+    name: "stg_custom_events",        -- TODO: เปลี่ยนชื่อให้ตรงกับ event group
+    description: "Staging: TODO — อธิบาย event group นี้",
+    columns: {
+        event_date:     "Event date in local timezone",
+        event_name:     "TODO: ระบุ event names ที่ filter",
+        user_pseudo_id: "GA4 user identifier",
+        ga_session_id:  "Session ID",
+        country:        "User country",
+        os:             "Operating system"
+        -- TODO: เพิ่ม columns สำหรับ event_params ของ app
+    }
+}
+
+SELECT
+    DATE(TIMESTAMP_MICROS(event_timestamp), '${dataform.projectConfig.vars.timezone}') AS event_date,
+    event_name,
+    user_pseudo_id,
+    (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id')     AS ga_session_id,
+    COALESCE(geo.country, '(not set)')                                                  AS country,
+    COALESCE(device.operating_system, '(not set)')                                      AS os,
+
+    -- TODO: ดึง event_params ตาม type ที่ถูกต้อง
+    -- int param:    (SELECT value.int_value    FROM UNNEST(event_params) WHERE key = 'param_name')
+    -- string param: (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'param_name')
+    -- float param:  (SELECT COALESCE(value.double_value, value.float_value, CAST(value.int_value AS FLOAT64))
+    --                FROM UNNEST(event_params) WHERE key = 'param_name')
+
+FROM `${dataform.projectConfig.vars.ga4_dataset}.events_*`
+WHERE
+    event_name IN ('YOUR_EVENT_NAME')  -- TODO: ใส่ event names ที่ต้องการ
+    AND REGEXP_CONTAINS(_TABLE_SUFFIX, r'^\d{8}$')
+    AND _TABLE_SUFFIX >= FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE('${dataform.projectConfig.vars.timezone}'), INTERVAL 90 DAY))
+    AND (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'debug_mode') IS DISTINCT FROM 1

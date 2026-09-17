@@ -1,0 +1,15 @@
+[sqlfluff]
+templater = jinja
+dialect = bigquery
+max_line_length = 120
+
+[sqlfluff:indentation]
+indented_joins = false
+indented_using_on = true
+template_blocks_indent = false
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.functions]
+capitalisation_policy = upper

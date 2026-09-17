@@ -1,0 +1,28 @@
+config {
+    type: "view",
+    schema: "analytics_staging",
+    name: "stg_core_events",
+    description: "Staging: core session events — session_start and first_open for all GA4 apps",
+    columns: {
+        event_date:     "Event date in local timezone",
+        event_name:     "session_start or first_open",
+        user_pseudo_id: "GA4 user identifier",
+        ga_session_id:  "Session ID (from event_params)",
+        country:        "User country",
+        os:             "Operating system (iOS, Android, Web)"
+    }
+}
+
+SELECT
+    DATE(TIMESTAMP_MICROS(event_timestamp), '${dataform.projectConfig.vars.timezone}') AS event_date,
+    event_name,
+    user_pseudo_id,
+    (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id')     AS ga_session_id,
+    COALESCE(geo.country, '(not set)')                                                  AS country,
+    COALESCE(device.operating_system, '(not set)')                                      AS os
+FROM `${dataform.projectConfig.vars.ga4_dataset}.events_*`
+WHERE
+    event_name IN ('session_start', 'first_open')
+    AND REGEXP_CONTAINS(_TABLE_SUFFIX, r'^\d{8}$')
+    AND _TABLE_SUFFIX >= FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE('${dataform.projectConfig.vars.timezone}'), INTERVAL 90 DAY))
+    AND (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'debug_mode') IS DISTINCT FROM 1

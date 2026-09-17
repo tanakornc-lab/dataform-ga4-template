@@ -1,0 +1,29 @@
+-- =============================================================================
+-- TEMPLATE FILE — สร้างไฟล์ใหม่ทับหรือ copy แล้วแก้ตาม business logic ของ app
+-- ชื่อไฟล์: int_<name>_kpis.sqlx  เช่น int_purchase_kpis.sqlx
+-- =============================================================================
+
+config {
+    type: "view",
+    schema: "analytics_transform",
+    name: "int_custom_kpis",          -- TODO: เปลี่ยนชื่อ
+    description: "Transform: TODO — อธิบาย metrics ที่คำนวณ"
+}
+
+SELECT
+    event_date,
+    country,
+    os,
+    -- TODO: เพิ่ม dimensions ที่ต้องการ GROUP BY (เช่น stage_number, item_id)
+
+    -- COUNT metrics: COALESCE(…, 0) เสมอ
+    COUNT(CASE WHEN event_name = 'YOUR_EVENT' THEN 1 END)                              AS event_count,
+
+    -- COUNT DISTINCT (non-additive): ห้าม SUM ซ้ำใน mart
+    COUNT(DISTINCT CASE WHEN event_name = 'YOUR_EVENT' THEN user_pseudo_id END)        AS unique_users,
+
+    -- AVG metrics: COALESCE(value, NULL) — NULL ≠ 0
+    AVG(CASE WHEN event_name = 'YOUR_EVENT' THEN YOUR_METRIC END)                      AS avg_metric
+
+FROM ${ref("stg_custom_events")}   -- TODO: เปลี่ยนเป็นชื่อ staging ที่ถูกต้อง
+GROUP BY 1, 2, 3

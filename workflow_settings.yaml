@@ -1,0 +1,9 @@
+defaultProject: YOUR_BQ_PROJECT
+defaultLocation: asia-southeast1
+defaultDataset: analytics_staging
+defaultAssertionDataset: dataform_assertions
+dataformCoreVersion: "3.0.52"
+vars:
+  timezone: Asia/Bangkok
+  ga4_dataset: YOUR_BQ_PROJECT.analytics_YOUR_PROPERTY_ID
+  app_name: YOUR_APP_NAME
